@@ -3,7 +3,7 @@ library(leaflet)
 #library(dplyr)
 #library(curl) # make the jsonlite suggested dependency explicit
 
-
+ARQUIVO_SAIDA <- ''
 # server.R
 rm(list = ls())
 rm(list = setdiff(ls(), lsf.str()))
@@ -11,7 +11,7 @@ rm(list = setdiff(ls(), lsf.str()))
 home <-'/'
 ## PARA A HOSPEDAGEM NO JARDIM ALTERAR PARA '/modelagem/'
 
-ARQUIVO_SAIDA <- 'www/Script.R'
+
 t <- 7
 ext1 <- -90 
 ext2 <- -33
@@ -27,6 +27,8 @@ arquivo <- list()
 arquivo2 <- list()
 
 ETAPA <- 0
+
+#ARQUIVO_SAIDA <- paste0("www/",projeto,"/script.R")
 
 limparResultadosAnteriores<-function()({
   
@@ -247,9 +249,9 @@ function(input, output, session) {
     group_abs <- kfold(backgr,part)
     
 
-    cat(paste0("group_pre <- kfold(coord.part)"),file=ARQUIVO_SAIDA,append=TRUE)
+    cat(paste0("group_pre <- kfold(coord,part)"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat(paste0("group_abs <- kfold(backgr.part)"),file=ARQUIVO_SAIDA,append=TRUE)
+    cat(paste0("group_abs <- kfold(backgr,part)"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
     
     
@@ -294,7 +296,7 @@ function(input, output, session) {
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
     
     
-        colnames(sdmdata)[1] <- "group"
+    colnames(sdmdata)[1] <- "group"
 
     cat(paste0("colnames(sdmdata)[1] <- \"group\""),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
@@ -354,13 +356,13 @@ function(input, output, session) {
       cat(paste("Modeling...",sp,"Partition",i,'\n'))
       
       if (Bioclim==T){
-        cat(paste("Bioclim",'\n'))
+        cat(paste("#Bioclim",'\n'))
         # Constr?i o modelo no espa?o ambiental
         bc <- bioclim (var, coord_pres_train)
         
         if (i==1)
         {
-        cat(paste0("BIOCLIM"),file=ARQUIVO_SAIDA,append=TRUE)
+        cat(paste0("#BIOCLIM"),file=ARQUIVO_SAIDA,append=TRUE)
         cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
         
         cat(paste0(" bc <- bioclim (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
@@ -807,12 +809,12 @@ function(input, output, session) {
               ma_future_mult <- ma_future_mult/maxValue(ma_future_mult)} 
           } # Fecha o modelo futuro
         } # Fecha o algoritmo Mahalanobis
-        else {cat("ImpossÃ­el rodar Mahalanobis para",sp,"registros de presenÃ§a menor que o nÃºmero de variÃ¡veis ambientais",'\n')}
+        else {cat("ImpossÃ�el rodar Mahalanobis para",sp,"registros de presenÃ§a menor que o nÃºmero de variÃ¡veis ambientais",'\n')}
       }
       
       ### ESCREVE OS MODELOS
       
-      ## Modelos contÃ­nuos
+      ## Modelos contÃ�nuos
       if (write.cont==T){
         cat(paste("Salvando modelos cont?nuos...",sp,i,'\n'))
         
@@ -1607,7 +1609,7 @@ function(input, output, session) {
     if (length(arquivo2>0))
     {
       for (i in 1:length(arquivo2)){
-        cat(paste0("arquivo <- c(arquivo,paste('ex/current/",input$resolucao,arquivo2[[i]],"',sep=''))"),file=ARQUIVO_SAIDA,append=TRUE)
+        cat(paste0("arquivo <- c(arquivo,paste('",arquivo2[[i]],"',sep=''))"),file=ARQUIVO_SAIDA,append=TRUE)
         cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
       }
     }   
@@ -2029,7 +2031,7 @@ function(input, output, session) {
     
     
     output$uiscript <- renderUI({
-      lista_txt <- list.files(paste0("www/",projeto,"/"),full.names=F,pattern=paste0("Script.R"))
+      lista_txt <- list.files(paste0("www/",projeto,"/"),full.names=F,pattern=paste0("script.R"))
       lapply(1:length(lista_txt), function(i) {
         tags$div(
           tags$a(href=paste0(home,projeto,'/',lista_txt[i]), paste0(lista_txt[i]), target="_blank")
@@ -2791,7 +2793,10 @@ output$downloadscript <- downloadHandler(
   
 	obs <- observe({   
 	   
-	isolate({ projeto <<- paste0('projeto/',input$edtprojeto) })
+	isolate({ projeto <<- paste0('projeto/',input$edtprojeto)
+	  ARQUIVO_SAIDA <<- paste0("www/",projeto,"/script.R")
+	
+	})
 	if (input$btnconsultarprojeto>0)
 	{
 	  ## COLOCO AQUI TODAS AS FUNÇÃO PARA LISTAR OS DADOS DO PROJETO CONSULTADO
